@@ -14,16 +14,16 @@ if __name__ == "__main__":
             url += arg
 
         elif arg == "new":
-            main.run(url, log=True, url=url)
+            main.main.run(url, log=True)
             break
 
         elif arg == "loop":
             while True:
-                main.run(url, log=True, url=url)
+                main.main.run(url, log=True)
                 sleep(timer)
             break
 
         elif arg == "debug":
-            main.run(url, log=False, url=url)
+            main.main.run(url, log=False)
             break
         
