@@ -1,17 +1,22 @@
 freegamefinders_url   = "https://steamcommunity.com/groups/freegamesfinders/announcements/listing"
 
+redirecting_url       = "https://steamcommunity.com/linkfilter/?url="
+
 def announcement(number):
-    announcement_element  = f'//div[@class="announcement"][{number}]'
-    announcement_head     = '//a[@class="large_title"]'
-    announcement_title    = announcement_head + "/text()"
-    announcement_url      = announcement_head + "/@href"
-    announcement_body     = '//div[@class="bodytext"]'
-    announcement_bodytext = announcement_body + "/text()"
-    announcement_bodyurls = announcement_body + '//a[@class="bb_link"]/@href'
-    return announcement_title, announcement_url, announcement_bodytext, announcement_bodyurls 
+    annc_element   = f'//div[@class="announcement"][{number}]'
+    annc_date      = annc_element + '//div[@class="announcement_byline"]/text()'
+    annc_head      = annc_element + '//a[@class="large_title"]'
+    annc_title     = annc_head + "/text()"
+    annc_url       = annc_head + "/@href"
+    annc_body      = annc_element + '//div[@class="bodytext"]'
+    annc_bodytext  = annc_body + "/text()"
+    annc_bodyurls  = annc_body + '//a[@class="bb_link"]/@href'
+    annc_likes     = annc_element + '//span[@class="rateUpCount"]//span/text()'
+    return annc_date, annc_title, annc_url, annc_bodytext, annc_bodyurls, annc_likes
 
 platforms  = [
 {
+"scrape" : True,
 "title"  : "steam",
 "alias"  : "Steam Store",
 "link"   : "https://store.steampowered.com/app",
@@ -20,10 +25,10 @@ platforms  = [
 "gtitle" : '//div[@class="apphub_AppName"]/text()',
 "glink"  : '//img[@class="game_header_image_full"]/@src',
 "gdesc"  : '//div[@class="game_description_snippet"]/text()',
-"check"  : '', # checks if game is actually free
 },
 
 {
+"scrape" : True,
 "title"  : "gog",
 "alias"  : "Good old Games / GOG.com",
 "link"   : "https://www.gog.com/",
@@ -32,6 +37,14 @@ platforms  = [
 "gtitle" : '//h1[@class="productcard-basics__title"]/text()',
 "glink"  : '//meta[@property="og:image"]/@content',
 "gdesc"  : '//div[@class="description"]/text()',
-"check"  : '', # checks if game is actually free
+}
+
+{
+"scrape" : False,
+"title"  : "epic",
+"alias"  : "Epic Games",
+"link"   : "https://www.store.epicgames.com/",
+"color"  : 16777214,
+"redir"  : ["https://store.epicgames.com/en-US/p/"],
 }
 ]

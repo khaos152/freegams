@@ -18,7 +18,7 @@ footer_icon   = "https://avatars.githubusercontent.com/u/83596694?v=4"
 # footer content
 footer_text   = "Freega • Free Game Notifier, Discord-Webhook"
 
-# blacklist for content in title
+# blacklist for title
 blacklist     = ["humble bundle", "big fish", "gleam", "vloot", "indiegala", "Will Glow the Wisp"]
 
 # timer for loop
@@ -27,5 +27,5 @@ timer         = 900
 # True = bad formatting, less data to load - False = better formatting, more data to load, more prone to bugs
 minimal       = False
 
-# True = doesn't check if games are actually free
-blind_trust   = False
+# how many announcements should be scanned (5 max)
+scan_amount   = 3
