@@ -176,7 +176,7 @@ def run(url, debug):
             gamedata        = game.get_details(platform["target_url"], platform)
             timestamp       = time.release_format(a["date"])
             gamedata_sorted = discord.move(gamedata, platform, timestamp)
-            refer = f''':octopus: [GitHub](https://github.com/khaos152/freega)
+            refer = f''':octopus: [GitHub](https://github.com/khaos152/freegams)
             :information_source: [Source]({platforms.freegamefinders_url})
             :gift: [**Get '{gamedata["title"]}' for free**]({platform["target_url"]})'''
             gamedata_sorted["field_name"]  = ["expires", "description", "links", "rating"]
