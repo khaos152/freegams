@@ -2,6 +2,14 @@ freegamefinders_url   = "https://steamcommunity.com/groups/freegamesfinders/anno
 
 redirecting_url       = "https://steamcommunity.com/linkfilter/?url="
 
+thumbs                = "https://raw.githubusercontent.com/khaos152/freega/main/thumbnails/"
+profile_icon          = "gift_"
+
+footer_icon   = "https://avatars.githubusercontent.com/u/83596694?v=4"
+footer_text   = "Freega • Free Game Notifier, Discord-Webhook"
+
+
+
 def announcement(number):
     annc_element   = f'//div[@class="announcement"][{number}]'
     annc_date      = annc_element + '//div[@class="announcement_byline"]/text()'
@@ -17,8 +25,9 @@ def announcement(number):
 platforms  = [
 {
 "scrape" : True,
-"title"  : "steam",
-"alias"  : "Steam Store",
+"title"  : "Steam Store",
+"icon"   : profile_icon + "steam",
+"thumb"  : thumbs + "steam",
 "link"   : "https://store.steampowered.com/app",
 "color"  : 2302894,
 "redir"  : ["https://store.steampowered.com/app/"],
@@ -29,8 +38,9 @@ platforms  = [
 
 {
 "scrape" : True,
-"title"  : "gog",
-"alias"  : "Good old Games / GOG.com",
+"title"  : "Good old Games / GOG.com",
+"icon"   : profile_icon + "gog";
+"thumb"  : thumbs + "gog",
 "link"   : "https://www.gog.com/",
 "color"  : 14139156,
 "redir"  : ["https://www.gog.com/game/", "https://www.gog.com/en/game/"],
@@ -41,8 +51,9 @@ platforms  = [
 
 {
 "scrape" : False,
-"title"  : "epic",
-"alias"  : "Epic Games",
+"title"  : "Epic Games",
+"icon"   : profile_icon + "epic",
+"thumb"  : thumbs + "epic",
 "link"   : "https://www.store.epicgames.com/",
 "color"  : 16777214,
 "redir"  : ["https://store.epicgames.com/en-US/p/"],

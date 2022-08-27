@@ -58,23 +58,21 @@ class post:
         return dictlist
 
 class game:
-    def get_platform(url):
-        for platform in platforms.platforms:
-            for redir_url in platform["redir"]:
-                if redir_url in url:
-                    return platform
+    def get_platform(url_list):
+        for url in url_list:
+            for platform in platforms.platforms:
+                for redir_url in platform["redir"]:
+                    if redir_url in url:
+                        platform["target_url"] = url.replace(platforms.redirecting_url, "")
+                        return platform
         return False
 
     def get_details(url, platform):
         content     = scrape.get_html(url)
-        title       = content.xpath(platform["gtitle"])
-        picture     = content.xpath(platform["glink"])
-        description = content.xpath(platform["gdesc"])
-        if len(content.xpath(platform["check"])) > 0:
-            free = True
-        else:
-            free = False
-        return title, picture, description, free
+        dict["title"]       = content.xpath(platform["gtitle"])
+        dict["picture"]     = content.xpath(platform["glink"])
+        dict["description"] = content.xpath(platform["gdesc"])
+        return dict
 
 class time:
     def release_format(date):
@@ -87,21 +85,41 @@ class time:
         
 
 class discord:
-    def translate(url, content):
+    def move(dict_game, dict_platform, timestamp):
+        dict["title"]       = dict_game["title"]
+        dict["color"]       = dict_platform["color"]
+        dict["url"]         = dict_platform["target_url"]
+        dict["author"]      = dict_platform["title"]
+        dict["author_url"]  = dict_platform["link"]
+        dict["author_icon"] = dict_platform["icon"]
+        dict["field_name"]  = 
+        dict["field_value"] = 
+        if config.footer   == True:
+            dict["footer_text"] = platforms.footer_text
+            dict["footer_icon"] = platforms.footer_icon
+        dict["thumbnail"]   = dict_platform["thumb"]
+        dict["image"]       = dict_game["picture"]
+        dict["timestamp"]   = timestamp
+        return dict
+
+    def translate(url, dict):
         webhook = DiscordWebhook(url=url)
-        embed   = DiscordEmbed(title=content["title"], color=content["color"], url=content["url"])
-        embed.set_author(name=content["author"], url=content["author_url"], icon_url=content["author_icon"])
-        for name, value in zip(content["field_name"], content["field_value"]):
+        embed   = DiscordEmbed(title=dict["title"], color=dict["color"], url=dict["url"])
+        embed.set_author(name=dict["author"], url=dict["author_url"], icon_url=dict["author_icon"])
+        for name, value in zip(dict["field_name"], dict["field_value"]):
             embed.add_embed_field(name=name, value=value)
-        embed.set_footer(text=content["footer_text"], icon_url=["footer_icon"])
-        embed.set_thumbnail(url=content["thumbnail"])
-        embed.set_image(url=content["image"])
-        embed.set_timestamp(content["timestamp"])
+        embed.set_footer(text=dict["footer_text"], icon_url=["footer_icon"])
+        embed.set_thumbnail(url=dict["thumbnail"])
+        embed.set_image(url=dict["image"])
+        embed.set_timestamp(dict["timestamp"])
         webhook.add_embed(embed)
         return webhook
 
     def send(webhook):
         return webhook.execute()
+
+    def sendstatus():
+        return
 
 ### RUN ###
 
@@ -109,7 +127,11 @@ def run(url, log):
     announcements        = post.get_content(3)
     wanted_announcements = post.cleanup(announcements)
     for a in announcements:
-
+        platform        = game.get_platform(a["bodyurls"])
+        gamedata        = game.get_details(platform["target_url"], platform)
+        gamedata_sorted = discord.move(gamedata)
+        gamedata_json   = discord.translate(gamedata_sorted)
+        discord.send(gamedata_json)
 
 
 

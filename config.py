@@ -12,12 +12,6 @@ icon          = "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thum
 # enable/disable footer
 footer        = True
 
-# footer icon url
-footer_icon   = "https://avatars.githubusercontent.com/u/83596694?v=4"
-
-# footer content
-footer_text   = "Freega • Free Game Notifier, Discord-Webhook"
-
 # blacklist for title
 blacklist     = ["humble bundle", "big fish", "gleam", "vloot", "indiegala", "Will Glow the Wisp"]
 
