@@ -5,6 +5,7 @@ import platforms
 import config
 from discord_webhook import DiscordWebhook, DiscordEmbed
 from datetime import datetime
+from datefinder import find_dates
 
 class scrape:
     def get_html(url):
@@ -27,35 +28,54 @@ class post:
         for i in range(1, number, 1):
             xpaths   = platforms.announcement(i)
             dict     = {}
-            dict["date"]     = content.xpath(xpaths["date"])[0]
-            dict["title"]    = content.xpath(xpaths["title"])[0]
-            dict["url"]      = content.xpath(xpaths["url"])[0]
-            dict["bodytext"] = content.xpath(xpaths["bodytext"])[0]
-            dict["bodyurls"] = content.xpath(xpaths["bodyurls"])[0]
-            dict["likes"]    = content.xpath(xpaths["likes"])[0]
+            dict["date"]       = content.xpath(xpaths["date"])[0]
+            dict["title"]      = content.xpath(xpaths["title"])[0]
+            dict["url"]        = content.xpath(xpaths["url"])[0]
+            dict["bodytext"]   = content.xpath(xpaths["bodytext"])
+            dict["bodyurls"]   = content.xpath(xpaths["bodyurls"])[0]
+            dict["likes"]      = content.xpath(xpaths["likes"])[0]
+            dict["expires"]    = time.get_date(dict["bodytext"], True)  # string version
+            dict["expires_d"]  = time.get_date(dict["bodytext"], False) # date version
             dictlist.append(dict)
         return dictlist
 
-    def is_new(content): # takes the newest announcement if it hasn't been seen yet
-        title = content[0]
+    def is_new(dict): # takes the newest announcement if it hasn't been seen yet
+        title = dict[0]
         if title in log.read(): # if the first title is inside the logs
             return False
         else:
             return True
 
-    def is_blacklisted(content):
-        title = content[0]
+    def is_blacklisted(dict):
+        title = dict[0]
         for word in config.blacklist:
             if word in title:
                 return True
         return False
 
+    def allows_scraping(dict):
+        if dict["scrape"]:
+            return True
+        else:
+            return False
+
+    def is_outdated(date):
+        if (date < datetime.now()):
+            return True
+        else:
+            return False
+
     def cleanup(dictlist):
         for dict in dictlist:
-            if not is_new(dict["title"]):
+            if not post.is_new(dict["title"]):
                 dictlist.remove(dict)
-            elif is_blacklisted(dict["title"]):
+                print(f'{dict["title"]} has already been posted!')
+            elif post.is_blacklisted(dict["title"]):
                 dictlist.remove(dict)
+                print(f'{dict["title"]} is blacklisted!')
+            elif post.is_outdated(dict["expires_d"]):
+                dictlist.remove(dict)
+                print(f'{dict["title"]} has expired!')
         return dictlist
 
 class game:
@@ -80,25 +100,23 @@ class time:
         date_clear = date.replace("\r","").replace("\n","").replace("\t","").replace("-","")
         return date_clear
 
-    def test(date):
-        if "pm" in date:
-            hour     = date.split(" ")[3].split(":")[0]
-            hour24   = int(hour) + 12
-            date_24  = date.replace(hour, str(hour24))
-            date_out = date_24.replace("pm", "")
-        else:
-            date_out = date.replace("am", "")
-        return date_out
-
     def release_format(date):
         date_clear     = time.cleanup(date)
         date_out       = datetime.strptime(date_clear, '%d %b @ %I:%M%p ').replace(year=datetime.now().year)
         date_timestamp = date_out.timestamp()
         return date_timestamp
 
-    def expiration_format(date):
-        return
-        
+    def get_date(text_list, string):
+        text = ""
+        for t in text_list:
+            text += t + "\n"
+        for date in find_dates(text):
+            first_find = date.replace(year=datetime.now().year)
+            date_out   = first_find.replace(year=datetime.now().year) # fix date year
+            if string:
+                date_out = date_out.strftime("%B %d, %Y") # date becomes string
+            return date_out
+
 
 class discord:
     def urls():
@@ -129,7 +147,7 @@ class discord:
         embed   = DiscordEmbed(title=dict["title"], color=dict["color"], url=dict["url"])
         embed.set_author(name=dict["author"], url=dict["author_url"], icon_url=dict["author_icon"])
         for name, value in zip(dict["field_name"], dict["field_value"]):
-            embed.add_embed_field(name=name, value=value)
+            embed.add_embed_field(name=name, value=value, inline=False)
         embed.set_footer(text=dict["footer_text"], icon_url=dict["footer_icon"])
         embed.set_thumbnail(url=dict["thumbnail"])
         embed.set_image(url=dict["image"])
@@ -148,22 +166,24 @@ class discord:
 def run(url, debug):
     if url == "":
         url = discord.urls()[0]
-    announcements     = post.get_content(3)
+    announcements     = post.get_content(6)
     if not debug:
         announcements = post.cleanup(announcements)
     for a in announcements:
         platform        = game.get_platform(a["bodyurls"])
-        print(a["title"])
-        if platform["scrape"]:
+        if post.allows_scraping(platform):
+            print(a["title"])
             gamedata        = game.get_details(platform["target_url"], platform)
             timestamp       = time.release_format(a["date"])
             gamedata_sorted = discord.move(gamedata, platform, timestamp)
-            print(gamedata_sorted)
-            gamedata_sorted["field_name"]  = ["test"]
-            gamedata_sorted["field_value"] = ["test"]
+            refer = f''':octopus: [GitHub](https://github.com/khaos152/freega)
+            :information_source: [Source]({platforms.freegamefinders_url})
+            :gift: [**Get '{gamedata["title"]}' for free**]({platform["target_url"]})'''
+            gamedata_sorted["field_name"]  = ["expires", "description", "links", "rating"]
+            gamedata_sorted["field_value"] = [":calendar: " + a["expires"], gamedata["description"], refer, ":thumbsup: " + a["likes"]]
             gamedata_json   = discord.translate(url, gamedata_sorted)
             discord.send(gamedata_json)
             if not debug:
                 log.write(a["title"])
         else:
-            print(f'\'{a["title"]}\' cannot be posted as {platform["title"]} does not want us to scrape their site!')
+            print(f'{a["title"]} can not be posted as {platform["title"]} does not allow scraping!')
