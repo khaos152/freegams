@@ -27,7 +27,7 @@ Free Game Notifier, Discord-Webhook
 (language might change according to your ip address)
 
 <p align="center">
-<a href="https://www.gog.com/"><img title="Good Old Games" src="https://github.com/khaos152/freegams/blob/main/example/gog.png?raw=true" width="350"></a>
+<a href="https://www.gog.com/"><img title="Good Old Games" src="https://github.com/khaos152/freegams/blob/main/example/gog.png?raw=true" width="400"></a>
 </p>
 
 ------------------------------------------
