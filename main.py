@@ -130,7 +130,7 @@ class discord:
         embed.set_author(name=dict["author"], url=dict["author_url"], icon_url=dict["author_icon"])
         for name, value in zip(dict["field_name"], dict["field_value"]):
             embed.add_embed_field(name=name, value=value)
-        embed.set_footer(text=dict["footer_text"], icon_url=["footer_icon"])
+        embed.set_footer(text=dict["footer_text"], icon_url=dict["footer_icon"])
         embed.set_thumbnail(url=dict["thumbnail"])
         embed.set_image(url=dict["image"])
         embed.set_timestamp(dict["timestamp"])
@@ -159,6 +159,8 @@ def run(url, debug):
             timestamp       = time.release_format(a["date"])
             gamedata_sorted = discord.move(gamedata, platform, timestamp)
             print(gamedata_sorted)
+            gamedata_sorted["field_name"]  = ["test"]
+            gamedata_sorted["field_value"] = ["test"]
             gamedata_json   = discord.translate(url, gamedata_sorted)
             discord.send(gamedata_json)
             if not debug:
