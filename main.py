@@ -4,7 +4,7 @@ from datetime import datetime
 import platforms
 import config
 from discord_webhook import DiscordWebhook, DiscordEmbed
-from datetime import strptime, datetime
+from datetime import datetime
 
 class scrape:
     def get_html(url):
@@ -14,10 +14,10 @@ class scrape:
 
 class log:
     def write(msg):
-        with open(config.file, "a+") as f:
+        with open(config.logfile, "a+") as f:
             f.write(msg)
     def read():
-        with open(config.file, "r") as f:
+        with open(config.logfile, "r") as f:
             return f.read()
 
 class post:
@@ -26,12 +26,13 @@ class post:
         dictlist = []
         for i in range(1, number, 1):
             xpaths   = platforms.announcement(i)
-            dict["date"]     = content.xpath(xpaths[0])
-            dict["title"]    = content.xpath(xpaths[1])
-            dict["url"]      = content.xpath(xpaths[2])
-            dict["bodytext"] = content.xpath(xpaths[3])
-            dict["bodyurls"] = content.xpath(xpaths[4])
-            dict["likes"]    = content.xpath(xpaths[5])
+            dict     = {}
+            dict["date"]     = content.xpath(xpaths["date"])[0]
+            dict["title"]    = content.xpath(xpaths["title"])[0]
+            dict["url"]      = content.xpath(xpaths["url"])[0]
+            dict["bodytext"] = content.xpath(xpaths["bodytext"])[0]
+            dict["bodyurls"] = content.xpath(xpaths["bodyurls"])[0]
+            dict["likes"]    = content.xpath(xpaths["likes"])[0]
             dictlist.append(dict)
         return dictlist
 
@@ -53,30 +54,45 @@ class post:
         for dict in dictlist:
             if not is_new(dict["title"]):
                 dictlist.remove(dict)
-            elif is_blacklisted(dict["title"])
+            elif is_blacklisted(dict["title"]):
                 dictlist.remove(dict)
         return dictlist
 
 class game:
-    def get_platform(url_list):
-        for url in url_list:
-            for platform in platforms.platforms:
-                for redir_url in platform["redir"]:
-                    if redir_url in url:
-                        platform["target_url"] = url.replace(platforms.redirecting_url, "")
-                        return platform
+    def get_platform(url):
+        for platform in platforms.platforms:
+            for redir_url in platform["redir"]:
+                if redir_url in url:
+                    platform["target_url"] = url.replace(platforms.redirecting_url, "")
+                    return platform
         return False
 
     def get_details(url, platform):
         content     = scrape.get_html(url)
-        dict["title"]       = content.xpath(platform["gtitle"])
-        dict["picture"]     = content.xpath(platform["glink"])
-        dict["description"] = content.xpath(platform["gdesc"])
+        dict        = {}
+        dict["title"]       = content.xpath(platform["gtitle"])[0]
+        dict["picture"]     = content.xpath(platform["glink"])[0]
+        dict["description"] = content.xpath(platform["gdesc"])[0]
         return dict
 
 class time:
+    def cleanup(date):
+        date_clear = date.replace("\r","").replace("\n","").replace("\t","").replace("-","")
+        return date_clear
+
+    def test(date):
+        if "pm" in date:
+            hour     = date.split(" ")[3].split(":")[0]
+            hour24   = int(hour) + 12
+            date_24  = date.replace(hour, str(hour24))
+            date_out = date_24.replace("pm", "")
+        else:
+            date_out = date.replace("am", "")
+        return date_out
+
     def release_format(date):
-        date_out       = datetime.strptime(date, '%d %b @ %I:%M').replace(year=datetime.now().year)
+        date_clear     = time.cleanup(date)
+        date_out       = datetime.strptime(date_clear, '%d %b @ %I:%M%p ').replace(year=datetime.now().year)
         date_timestamp = date_out.timestamp()
         return date_timestamp
 
@@ -85,15 +101,21 @@ class time:
         
 
 class discord:
+    def urls():
+        with open(config.urls, "r") as f:
+            url_list = f.read().split("\n")
+            return url_list
+
     def move(dict_game, dict_platform, timestamp):
+        dict                = {}
         dict["title"]       = dict_game["title"]
         dict["color"]       = dict_platform["color"]
         dict["url"]         = dict_platform["target_url"]
         dict["author"]      = dict_platform["title"]
         dict["author_url"]  = dict_platform["link"]
         dict["author_icon"] = dict_platform["icon"]
-        dict["field_name"]  = 
-        dict["field_value"] = 
+        dict["field_name"]  = "test"
+        dict["field_value"] = "test"
         if config.footer   == True:
             dict["footer_text"] = platforms.footer_text
             dict["footer_icon"] = platforms.footer_icon
@@ -123,16 +145,23 @@ class discord:
 
 ### RUN ###
 
-def run(url, log):
-    announcements        = post.get_content(3)
-    wanted_announcements = post.cleanup(announcements)
+def run(url, debug):
+    if url == "":
+        url = discord.urls()[0]
+    announcements     = post.get_content(3)
+    if not debug:
+        announcements = post.cleanup(announcements)
     for a in announcements:
         platform        = game.get_platform(a["bodyurls"])
-        gamedata        = game.get_details(platform["target_url"], platform)
-        gamedata_sorted = discord.move(gamedata)
-        gamedata_json   = discord.translate(gamedata_sorted)
-        discord.send(gamedata_json)
-
-
-
-print(post.get_content(1))
+        print(a["title"])
+        if platform["scrape"]:
+            gamedata        = game.get_details(platform["target_url"], platform)
+            timestamp       = time.release_format(a["date"])
+            gamedata_sorted = discord.move(gamedata, platform, timestamp)
+            print(gamedata_sorted)
+            gamedata_json   = discord.translate(url, gamedata_sorted)
+            discord.send(gamedata_json)
+            if not debug:
+                log.write(a["title"])
+        else:
+            print(f'\'{a["title"]}\' cannot be posted as {platform["title"]} does not want us to scrape their site!')

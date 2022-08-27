@@ -1,4 +1,5 @@
 from sys import argv
+import main
 
 
 if __name__ == "__main__":
@@ -12,15 +13,15 @@ if __name__ == "__main__":
             url += arg
 
         elif arg == "new":
-            main.run(url, log=True)
+            main.run(url, debug=False)
             break
 
         elif arg == "loop":
             while True:
-                main.run(url, log=True)
+                main.run(url, debug=False)
                 sleep(timer)
             break
 
         elif arg == "debug":
-            main.run(url, log=False)
+            main.run(url, debug=True)
             break

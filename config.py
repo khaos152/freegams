@@ -4,7 +4,7 @@
 urls          = "webhooklinks"
 
 # log filename
-file          = "freegames"
+logfile           = "freegames"
 
 # icon url
 icon          = "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/microsoft/310/wrapped-gift_1f381.png"
