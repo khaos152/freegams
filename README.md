@@ -19,7 +19,8 @@ Free Game Notifier, Discord-Webhook
 
 * create a file for your webhook-urls
 * get dependencies ```python -m pip install -U wheel lxml requests discordwebhook datefinder```
-* start freega ```python3 freega.py```
+* start freegams ```python3 run.py new```
+* start freegams as loop ```python3 run.py loop```
 
 # Distributors:
 *Steam, ~~Epic Games~~, Good old Games*
