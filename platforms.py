@@ -3,7 +3,7 @@ freegamefinders_url   = "https://steamcommunity.com/groups/freegamesfinders/anno
 redirecting_url       = "https://steamcommunity.com/linkfilter/?url="
 
 thumbs                = "https://raw.githubusercontent.com/khaos152/freega/main/thumbnails/"
-profile_icon          = "gift_"
+profile_icon          = thumbs + "gift_"
 
 footer_icon   = "https://avatars.githubusercontent.com/u/83596694?v=4"
 footer_text   = "Freega • Free Game Notifier, Discord-Webhook"
