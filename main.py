@@ -40,7 +40,7 @@ class post:
         return dictlist
 
     def is_new(dict): # takes the newest announcement if it hasn't been seen yet
-        title = dict[0]
+        title = dict["title"]
         if title in log.read(): # if the first title is inside the logs
             return False
         else:
@@ -122,6 +122,7 @@ class discord:
     def urls():
         with open(config.urls, "r") as f:
             url_list = f.read().split("\n")
+            url_list = list(filter(None, url_list))
             return url_list
 
     def move(dict_game, dict_platform, timestamp):
@@ -158,21 +159,24 @@ class discord:
     def send(webhook):
         return webhook.execute()
 
-    def sendstatus():
-        return
+    def send_success(execute):
+        execute_status = execute.status_code
+        if execute_status == 200:
+            return True
+        else:
+            return False
 
 ### RUN ###
 
-def run(url, debug):
-    if url == "":
-        url = discord.urls()[0]
+def run(url_list, debug):
+    if url_list == []:
+        url_list = discord.urls()
     announcements     = post.get_content(6)
     if not debug:
         announcements = post.cleanup(announcements)
     for a in announcements:
         platform        = game.get_platform(a["bodyurls"])
         if post.allows_scraping(platform):
-            print(a["title"])
             gamedata        = game.get_details(platform["target_url"], platform)
             timestamp       = time.release_format(a["date"])
             gamedata_sorted = discord.move(gamedata, platform, timestamp)
@@ -181,9 +185,16 @@ def run(url, debug):
             :gift: [**Get '{gamedata["title"]}' for free**]({platform["target_url"]})'''
             gamedata_sorted["field_name"]  = ["expires", "description", "links", "rating"]
             gamedata_sorted["field_value"] = [":calendar: " + a["expires"], gamedata["description"], refer, ":thumbsup: " + a["likes"]]
-            gamedata_json   = discord.translate(url, gamedata_sorted)
-            discord.send(gamedata_json)
-            if not debug:
-                log.write(a["title"])
+            for url in url_list:
+                gamedata_json = discord.translate(url, gamedata_sorted)
+                sent          = discord.send(gamedata_json)
+                success       = discord.send_success(sent)
+                if success:
+                    print(f'\'{a["title"]}\' has successfully been posted')
+                    if not debug:
+                        if post.is_new(a):
+                            log.write(a["title"])
+                else:
+                    print(f'\'{a["title"]}\' could not be posted')
         else:
-            print(f'{a["title"]} can not be posted as {platform["title"]} does not allow scraping!')
+            print(f'\'{a["title"]}\' can not be posted as {platform["title"]} does not allow scraping!')
