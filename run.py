@@ -1,7 +1,6 @@
 from sys import argv
 import main
 
-
 if __name__ == "__main__":
     args  = argv[1:]
     cycle = 0
