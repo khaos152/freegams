@@ -171,7 +171,7 @@ class discord:
 def run(url_list, debug):
     if url_list == []:
         url_list = discord.urls()
-    announcements     = post.get_content(6)
+    announcements     = post.get_content(config.scan_amount)
     if not debug:
         announcements = post.cleanup(announcements)
     for a in announcements:
