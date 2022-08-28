@@ -6,6 +6,7 @@ import config
 from discord_webhook import DiscordWebhook, DiscordEmbed
 from datetime import datetime
 from datefinder import find_dates
+from os.path import isfile
 
 class scrape:
     def get_html(url):
@@ -16,8 +17,10 @@ class scrape:
 class log:
     def write(msg):
         with open(config.logfile, "a+") as f:
-            f.write(msg)
+            f.write(msg + "\n")
     def read():
+        if not isfile(config.logfile):
+            log.write("")
         with open(config.logfile, "r") as f:
             return f.read()
 
@@ -26,22 +29,27 @@ class post:
         content  = scrape.get_html(platforms.freegamefinders_url)
         dictlist = []
         for i in range(1, number, 1):
-            xpaths   = platforms.announcement(i)
-            dict     = {}
-            dict["date"]       = content.xpath(xpaths["date"])[0]
-            dict["title"]      = content.xpath(xpaths["title"])[0]
-            dict["url"]        = content.xpath(xpaths["url"])[0]
-            dict["bodytext"]   = content.xpath(xpaths["bodytext"])
-            dict["bodyurls"]   = content.xpath(xpaths["bodyurls"])[0]
-            dict["likes"]      = content.xpath(xpaths["likes"])[0]
-            dict["expires"]    = time.get_date(dict["bodytext"], True)  # string version
-            dict["expires_d"]  = time.get_date(dict["bodytext"], False) # date version
-            dictlist.append(dict)
+            dict         = platforms.announcement_xpaths(i)
+            dict_out     = {}
+            for element in dict[0]:
+                dict_out[element] = content.xpath(dict[0][element])[0]
+            for element in dict[1]:
+                dict_out[element] = content.xpath(dict[1][element])
+            dictlist.append(dict_out)
         return dictlist
 
-    def is_new(dict): # takes the newest announcement if it hasn't been seen yet
-        title = dict["title"]
-        if title in log.read(): # if the first title is inside the logs
+    def fix_dates(dict_list):
+        dict_list_out = []
+        for dict in dict_list:
+            dict_out = dict
+            dict_out["expires"]    = time.get_date(dict["annc_text"], True)  # string version
+            dict_out["expires_d"]  = time.get_date(dict["annc_text"], False) # date version
+            dict_out["annc_date_d"]     = time.release_format(dict["annc_date"]) # date version
+            dict_list_out.append(dict_out)
+        return dict_list_out
+
+    def is_new(string):
+        if string in log.read():
             return False
         else:
             return True
@@ -53,12 +61,6 @@ class post:
                 return True
         return False
 
-    def allows_scraping(dict):
-        if dict["scrape"]:
-            return True
-        else:
-            return False
-
     def is_outdated(date):
         if (date < datetime.now()):
             return True
@@ -66,33 +68,47 @@ class post:
             return False
 
     def cleanup(dictlist):
+        dictlist_out = []
         for dict in dictlist:
-            if not post.is_new(dict["title"]):
-                dictlist.remove(dict)
-                print(f'{dict["title"]} has already been posted!')
-            elif post.is_blacklisted(dict["title"]):
-                dictlist.remove(dict)
-                print(f'{dict["title"]} is blacklisted!')
+            target = dict["annc_title"]
+            if not post.is_new(target):
+                print(f'{target} has already been posted!')
+            elif post.is_blacklisted(target):
+                print(f'{target} is blacklisted!')
             elif post.is_outdated(dict["expires_d"]):
-                dictlist.remove(dict)
-                print(f'{dict["title"]} has expired!')
-        return dictlist
+                print(f'{target} has expired!')
+            else:
+                dictlist_out.append(dict)
+        return dictlist_out
 
 class game:
-    def get_platform(url):
-        for platform in platforms.platforms:
-            for redir_url in platform["redir"]:
-                if redir_url in url:
-                    platform["target_url"] = url.replace(platforms.redirecting_url, "")
-                    return platform
+    def get_platform(dict):
+        dict_out = dict
+        url_list = dict["annc_listed_urls"]
+        for url in url_list:
+            for platform in platforms.platforms:
+                for redir_url in platform["id_url"]:
+                    if redir_url in url:
+                        dict_out.update(platform)
+                        dict_out["game_url"] = url.replace(platforms.redirecting_url, "")
+                        return dict_out
         return False
 
-    def get_details(url, platform):
-        content     = scrape.get_html(url)
-        dict        = {}
-        dict["title"]       = content.xpath(platform["gtitle"])[0]
-        dict["picture"]     = content.xpath(platform["glink"])[0]
-        dict["description"] = content.xpath(platform["gdesc"])[0]
+    def get_details(dict):
+        content     = scrape.get_html(dict["game_url"])
+        dict_out        = dict
+        for element in dict:
+            if str(dict[element])[:2] == "//": # if element is xpath
+                dict_out[element] = content.xpath(dict[element])[0] 
+        return dict_out
+
+    def fix_missing(dict):
+        if "game_title" not in dict.keys():
+            dict["game_title"] = dict["annc_title"]
+        if "game_image" not in dict.keys():
+            dict["game_image"] = platforms.missing
+        if "game_desc" not in dict.keys():
+            dict["game_desc"]  = "*no description*"
         return dict
 
 class time:
@@ -117,7 +133,6 @@ class time:
                 date_out = date_out.strftime("%B %d, %Y") # date becomes string
             return date_out
 
-
 class discord:
     def urls():
         with open(config.urls, "r") as f:
@@ -125,23 +140,28 @@ class discord:
             url_list = list(filter(None, url_list))
             return url_list
 
-    def move(dict_game, dict_platform, timestamp):
-        dict                = {}
-        dict["title"]       = dict_game["title"]
-        dict["color"]       = dict_platform["color"]
-        dict["url"]         = dict_platform["target_url"]
-        dict["author"]      = dict_platform["title"]
-        dict["author_url"]  = dict_platform["link"]
-        dict["author_icon"] = dict_platform["icon"]
-        dict["field_name"]  = "test"
-        dict["field_value"] = "test"
+    def move(dict):
+        dict_out                = {}
+        if dict["game_title"]:
+            hook_title          = dict["game_title"]
+        else:
+            hook_title          = dict["annc_title"]
+        dict_out["title"]       = hook_title
+        dict_out["color"]       = dict["hook_color"]
+        dict_out["url"]         = dict["game_url"]
+        dict_out["author"]      = dict["store"]
+        dict_out["author_url"]  = dict["store_url"]
+        dict_out["author_icon"] = dict["store_icon"]
+        refer = platforms.linktree(dict["game_title"], dict["game_url"])
+        dict_out["field_name"]  = ["expires", "description", "links", "rating"]
+        dict_out["field_value"] = [":calendar: " + dict["expires"], dict["game_desc"], refer, ":thumbsup: " + dict["annc_rating"]]
         if config.footer   == True:
-            dict["footer_text"] = platforms.footer_text
-            dict["footer_icon"] = platforms.footer_icon
-        dict["thumbnail"]   = dict_platform["thumb"]
-        dict["image"]       = dict_game["picture"]
-        dict["timestamp"]   = timestamp
-        return dict
+            dict_out["footer_text"] = platforms.footer_text
+            dict_out["footer_icon"] = platforms.footer_icon
+        dict_out["thumbnail"]   = dict["thumbnail"]
+        dict_out["image"]       = dict["game_image"]
+        dict_out["timestamp"]   = dict["annc_date_d"]
+        return dict_out
 
     def translate(url, dict):
         webhook = DiscordWebhook(url=url)
@@ -171,30 +191,23 @@ class discord:
 def run(url_list, debug):
     if url_list == []:
         url_list = discord.urls()
-    announcements     = post.get_content(config.scan_amount)
+    announcements    = post.get_content(config.scan_amount)
+    announcements_wd = post.fix_dates(announcements)
     if not debug:
-        announcements = post.cleanup(announcements)
-    for a in announcements:
-        platform        = game.get_platform(a["bodyurls"])
-        if post.allows_scraping(platform):
-            gamedata        = game.get_details(platform["target_url"], platform)
-            timestamp       = time.release_format(a["date"])
-            gamedata_sorted = discord.move(gamedata, platform, timestamp)
-            refer = f''':octopus: [GitHub](https://github.com/khaos152/freegams)
-            :information_source: [Source]({platforms.freegamefinders_url})
-            :gift: [**Get '{gamedata["title"]}' for free**]({platform["target_url"]})'''
-            gamedata_sorted["field_name"]  = ["expires", "description", "links", "rating"]
-            gamedata_sorted["field_value"] = [":calendar: " + a["expires"], gamedata["description"], refer, ":thumbsup: " + a["likes"]]
-            for url in url_list:
-                gamedata_json = discord.translate(url, gamedata_sorted)
-                sent          = discord.send(gamedata_json)
-                success       = discord.send_success(sent)
-                if success:
-                    print(f'\'{a["title"]}\' has successfully been posted')
-                    if not debug:
-                        if post.is_new(a):
-                            log.write(a["title"])
-                else:
-                    print(f'\'{a["title"]}\' could not be posted')
-        else:
-            print(f'\'{a["title"]}\' can not be posted as {platform["title"]} does not allow scraping!')
+        announcements_wd = post.cleanup(announcements_wd)
+    for a in announcements_wd:
+        platform        = game.get_platform(a)
+        gamedata        = game.get_details(platform)
+        gamedata        = game.fix_missing(gamedata) # fixes for stores that prohibit web scraping
+        gamedata_sorted = discord.move(gamedata)
+        for url in url_list:
+            gamedata_json = discord.translate(url, gamedata_sorted)
+            sent          = discord.send(gamedata_json)
+            success       = discord.send_success(sent)
+            if success:
+                print(f'\'{gamedata["annc_title"]}\' has successfully been posted!')
+                if not debug:
+                    if post.is_new(gamedata["annc_title"]):
+                        log.write(gamedata["annc_title"])
+            else:
+                print(f'\'{gamedata["annc_title"]}\' could not be posted!')
