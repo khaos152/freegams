@@ -8,9 +8,9 @@ if __name__ == "__main__":
 
     for a in args:
         arg = a.lower()
-        url = ""
+        url = []
         if "https://" in arg: # look for webhookurl
-            url += arg
+            url.append(arg)
 
         elif arg == "new":
             main.run(url, debug=False)
