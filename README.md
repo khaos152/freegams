@@ -23,7 +23,7 @@ Free Game Notifier, Discord-Webhook
 * start freegams as loop ```python3 run.py loop```
 
 # Distributors:
-*Steam, ~~Epic Games~~, Good old Games*
+*Steam, (Epic Games), Good old Games*
 
 (language might change according to your ip address)
 
@@ -35,5 +35,4 @@ Free Game Notifier, Discord-Webhook
 
 *hint: if a game has 'refused classification' the script might be unable to find it!
 (for exaple: Postal 2 in Germany and Austria)*
-
-*hint: epic games is no longer supported as the website blocks any type of web scraping!*
+*hint: since the epic games store prohibits web scraping the notifications for their offers lack details such as images, descriptions and game titles!*
