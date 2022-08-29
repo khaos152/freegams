@@ -34,4 +34,4 @@ Free Game Notifier, Discord-Webhook
 ------------------------------------------
 *hint: if a game has 'refused classification' the script might be unable to find it!(for exaple: Postal 2 in Germany and Austria)* 
 <br />
-*hint: since the epic games store prohibits web scraping the notifications for their offers lack details such as images, descriptions and game titles!*
+*hint: since the epic games store prohibits web scraping, the notifications for their offers lack details such as images, descriptions and game titles!*
