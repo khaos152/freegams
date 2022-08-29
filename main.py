@@ -14,12 +14,19 @@ class scrape:
         htm = html.fromstring(req.text)
         return htm
 
+class condition:
+    def is_missing(file):
+        if isfile(file):
+            return False
+        else:
+            return True
+    
 class log:
     def write(msg):
         with open(config.logfile, "a+") as f:
             f.write(msg + "\n")
     def read():
-        if not isfile(config.logfile):
+        if condition.is_missing(config.logfile):
             log.write("")
         with open(config.logfile, "r") as f:
             return f.read()
@@ -190,6 +197,8 @@ class discord:
 
 def run(url_list, debug):
     if url_list == []:
+        if condition.is_missing(config.urls):
+            exit(f"Your webhook-url file '{config.urls}' is missing!")
         url_list = discord.urls()
     announcements    = post.get_content(config.scan_amount)
     announcements_wd = post.fix_dates(announcements)
