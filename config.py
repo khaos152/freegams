@@ -15,8 +15,5 @@ blacklist     = ["humble bundle", "big fish", "gleam", "vloot", "indiegala", "Wi
 # timer for loop (in seconds)
 timer         = 900
 
-# True = bad formatting, less data to load - False = better formatting, more data to load, more prone to bugs
-minimal       = False
-
 # how many announcements should be scanned (5 max)
 scan_amount   = 5
