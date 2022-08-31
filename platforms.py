@@ -12,8 +12,8 @@ footer_text   = "Freega • Free Game Notifier, Discord-Webhook"
 
 def linktree(game_title, game_url):
     value = f''':octopus: [GitHub]({repository})
-:information_source: [Source]({freegamefinders_url})
-:gift: [**Get '{game_title}' for free**]({game_url})'''
+    :information_source: [Source]({freegamefinders_url})
+    :gift: [**Get '{game_title}' for free**]({game_url})'''
     return value
 
 def announcement_xpaths(number):
@@ -56,6 +56,8 @@ platforms  = [
 "game_title" : '//h1[@class="productcard-basics__title"]/text()',
 "game_image" : '//meta[@property="og:image"]/@content',
 "game_desc"  : '//div[@class="description"]/text()',
+"verify"     : '//span[@class="cart-button__wrapper"]//span[@class="cart-button__state-default"]/text()',
+"verify_exp" : 'Go to giveaway',
 },
 
 {
