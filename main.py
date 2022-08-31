@@ -110,12 +110,19 @@ class game:
         return dict_out
 
     def fix_missing(dict):
+        
         if "game_title" not in dict.keys():
             dict["game_title"] = dict["annc_title"]
         if "game_image" not in dict.keys():
             dict["game_image"] = platforms.missing
         if "game_desc" not in dict.keys():
             dict["game_desc"]  = "*no description*"
+        if ("verify" not in dict.keys()) and ("verify_exp" not in dict.keys()):
+            dict["verify"]     = "❌"
+        elif dict["verify_exp"] in dict["verify"]:
+            dict["verify"]     = "✅"
+        else:
+            dict["verify"]     = "❌"
         return dict
 
 class time:
@@ -160,8 +167,8 @@ class discord:
         dict_out["author_url"]  = dict["store_url"]
         dict_out["author_icon"] = dict["store_icon"]
         refer = platforms.linktree(dict["game_title"], dict["game_url"])
-        dict_out["field_name"]  = ["expires", "description", "links", "rating"]
-        dict_out["field_value"] = [":calendar: " + dict["expires"], dict["game_desc"], refer, ":thumbsup: " + dict["annc_rating"]]
+        dict_out["field_name"]  = ["expires", "description", "links", "rating", "verified"]
+        dict_out["field_value"] = [":calendar: " + dict["expires"], dict["game_desc"], refer, ":thumbsup: " + dict["annc_rating"], dict["verify"]]
         if config.footer   == True:
             dict_out["footer_text"] = platforms.footer_text
             dict_out["footer_icon"] = platforms.footer_icon
