@@ -144,7 +144,7 @@ class time:
         for i in range(1000, 2400, 100): # removes numbers that irritate datefinder
             outputs.append(outputs[-1].replace(str(i), ""))
             outputs.remove(outputs[-2])
-        for date in find_dates(text[-1]):
+        for date in find_dates(outputs[-1]):
             first_find = date.replace(year=datetime.now().year)
             date_out   = first_find.replace(year=datetime.now().year) # fix date year
             if string:
