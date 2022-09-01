@@ -44,6 +44,8 @@ platforms  = [
 "game_title" : '//div[@class="apphub_AppName"]/text()',
 "game_image" : '//img[@class="game_header_image_full"]/@src',
 "game_desc"  : '//div[@class="game_description_snippet"]/text()',
+"verify"     : '//div[@class="discount_final_price"]/text()',
+"verify_exp" : '0,--€',
 },
 
 {
