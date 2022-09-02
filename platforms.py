@@ -44,8 +44,8 @@ platforms  = [
 "game_title" : '//div[@class="apphub_AppName"]/text()',
 "game_image" : '//img[@class="game_header_image_full"]/@src',
 "game_desc"  : '//div[@class="game_description_snippet"]/text()',
-"verify"     : '//div[@class="discount_final_price"]/text()',
-"verify_exp" : '0,--€',
+"verify"     : '//p[@class="game_purchase_discount_quantity "]/text()',
+"verify_exp" : 'Free to keep',
 },
 
 {
@@ -58,8 +58,8 @@ platforms  = [
 "game_title" : '//h1[@class="productcard-basics__title"]/text()',
 "game_image" : '//meta[@property="og:image"]/@content',
 "game_desc"  : '//div[@class="description"]/text()',
-"verify"     : '//span[@class="cart-button__wrapper"]//span[@class="cart-button__state-default"]/text()',
-"verify_exp" : 'Go to giveaway',
+"verify"     : '//span[@class="product-actions-price__giveaway"]/text()',
+"verify_exp" : ' ',
 },
 
 {
