@@ -49,9 +49,11 @@ class post:
         dict_list_out = []
         for dict in dict_list:
             dict_out = dict
-            dict_out["expires"]    = time.get_date(dict["annc_text"], True)  # string version
-            dict_out["expires_d"]  = time.get_date(dict["annc_text"], False) # date version
-            dict_out["annc_date_d"]     = time.release_format(dict["annc_date"]) # date version
+            annc_date               = time.release_format(dict["annc_date"])
+            dict_out["annc_date_d"] = annc_date[0]
+            dict_out["annc_date_t"] = annc_date[1]
+            dict_out["expires_d"]   = time.get_date(dict_out["annc_text"], annc_date[0])  # string version
+            dict_out["expires"]     = dict_out["expires_d"].strftime("%B %d, %Y") # date version
             dict_list_out.append(dict_out)
         return dict_list_out
 
@@ -83,7 +85,7 @@ class post:
             elif post.is_blacklisted(target):
                 print(f'{target} is blacklisted!')
             elif post.is_outdated(dict["expires_d"]):
-                print(f'{target} has expired!')
+                print(f'{target} has expired on {dict["expires"]}!')
             else:
                 dictlist_out.append(dict)
         return dictlist_out
@@ -134,9 +136,9 @@ class time:
         date_clear     = time.cleanup(date)
         date_out       = datetime.strptime(date_clear, '%d %b @ %I:%M%p ').replace(year=datetime.now().year)
         date_timestamp = date_out.timestamp()
-        return date_timestamp
+        return date_out, date_timestamp
 
-    def get_date(text_list, string):
+    def get_date(text_list, old_date):
         text = ""
         for t in text_list:
             text += t + "\n"
@@ -145,11 +147,11 @@ class time:
             outputs.append(outputs[-1].replace(str(i), ""))
             outputs.remove(outputs[-2])
         for date in find_dates(outputs[-1]):
-            first_find = date.replace(year=datetime.now().year)
+            first_find = date
             date_out   = first_find.replace(year=datetime.now().year) # fix date year
-            if string:
-                date_out = date_out.strftime("%B %d, %Y") # date becomes string
-            return date_out
+            if date_out > old_date: # if the expiration date is newer than the announcement date
+                return date_out
+        return False
 
 class discord:
     def urls():
@@ -178,7 +180,7 @@ class discord:
             dict_out["footer_icon"] = platforms.footer_icon
         dict_out["thumbnail"]   = dict["thumbnail"]
         dict_out["image"]       = dict["game_image"]
-        dict_out["timestamp"]   = dict["annc_date_d"]
+        dict_out["timestamp"]   = dict["annc_date_t"]
         return dict_out
 
     def translate(url, dict):
