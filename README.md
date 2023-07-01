@@ -8,7 +8,7 @@ Free Game Notifier, Discord-Webhook
 <p align="center">
 <a href="https://steamcommunity.com/groups/freegamesfinders/announcements"><img title="Free Game Finders" src="https://avatars.cloudflare.steamstatic.com/cebef01be773032093af3b4b453bb25ae85e0c93_full.jpg" height="150"></a>
 <a href="https://discord.gg/pTUupKE"><img title="FGF Discord Server" src="https://wallpaperaccess.com/full/765574.jpg" width="150"></a>
-<a href="https://discord.gg/VUQN9HzhjT"><img title="Freegams Discord Server" src="https://media.glassdoor.com/sqll/910317/discord-squarelogo-1497339636473.png" height="150"></a>
+<a href="https://discord.com/invite/AYAW26ycee"><img title="Freegams Discord Server" src="https://media.glassdoor.com/sqll/910317/discord-squarelogo-1497339636473.png" height="150"></a>
 <a href="https://steamcommunity.com/profiles/76561197995443256"><img title="Creator of FGF SteamCommunity" src="https://avatars.cloudflare.steamstatic.com/e3d4765b84b1736a0819cb954b13f7b648c5ea1e_full.jpg" height="150"></a>
 <a href="https://steamcommunity.com/id/Prometheus152/"><img title="Creator of Freegams" src="https://avatars.cloudflare.steamstatic.com/ba1f8273c0c475ecc43955acddcd9e5466ae06a2_full.jpg" height="150"></a>
 </p>
